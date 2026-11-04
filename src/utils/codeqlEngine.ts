@@ -7,7 +7,7 @@ export const CODEQL_RULES: CodeQlRule[] = [
     severity: 'CRITICAL',
     cwe: 'CWE-841: Improper Enforcement of Behavioral Workflow',
     description: 'Detects external calls made prior to internal state updates (Checks-Effects-Interactions pattern violation).',
-    status: 'CLEAN',
+    status: 'NOT_RUN',
     filePath: 'contracts/QmoosaToken.sol',
     line: 42
   },
@@ -17,7 +17,7 @@ export const CODEQL_RULES: CodeQlRule[] = [
     severity: 'CRITICAL',
     cwe: 'CWE-284: Improper Access Control',
     description: 'Flags public or external mint functions lacking access control modifiers (onlyOwner or AccessControl role).',
-    status: 'CLEAN',
+    status: 'NOT_RUN',
     filePath: 'contracts/GovernedTokenomics.sol',
     line: 28
   },
@@ -27,7 +27,7 @@ export const CODEQL_RULES: CodeQlRule[] = [
     severity: 'HIGH',
     cwe: 'CWE-798: Use of Hard-coded Credentials',
     description: 'Scans for raw 0x 64-char hex strings or sensitive API credentials embedded directly into source code.',
-    status: 'CLEAN',
+    status: 'NOT_RUN',
     filePath: 'src/services/quickNodeClient.ts',
     line: 12
   },
@@ -37,7 +37,7 @@ export const CODEQL_RULES: CodeQlRule[] = [
     severity: 'HIGH',
     cwe: 'CWE-327: Use of a Broken or Risky Cryptographic Algorithm',
     description: 'Flags usage of MD5, SHA-1, or pure non-hybrid classical algorithms without PQC fallback in post-2026 specs.',
-    status: 'CLEAN',
+    status: 'NOT_RUN',
     filePath: 'src/crypto/pqcHybrid.ts',
     line: 55
   },
@@ -47,7 +47,7 @@ export const CODEQL_RULES: CodeQlRule[] = [
     severity: 'MEDIUM',
     cwe: 'CWE-20: Improper Input Validation',
     description: 'Verifies that RPC URLs, DID strings, and payment QR payload decodes are strictly validated before parsing.',
-    status: 'CLEAN',
+    status: 'NOT_RUN',
     filePath: 'src/protocols/x402Middleware.ts',
     line: 19
   },
@@ -57,28 +57,30 @@ export const CODEQL_RULES: CodeQlRule[] = [
     severity: 'MEDIUM',
     cwe: 'CWE-1321: Improperly Controlled Modification of Object Prototype',
     description: 'Ensures recursive configuration merge routines guard against __proto__ and constructor poisoning.',
-    status: 'CLEAN',
+    status: 'NOT_RUN',
     filePath: 'src/engine/conway.ts',
     line: 88
   }
 ];
 
-export function runCodeQlScan(customRules?: CodeQlRule[]): {
+// CodeQL is a server-side CLI/database analyzer. Browser UI cannot run it.
+// The rule catalog must never be mistaken for actual SARIF results.
+export function runCodeQlScan(_customRules?: CodeQlRule[]): {
   rulesScanned: number;
   passed: number;
   failed: number;
   violations: CodeQlRule[];
   scanDurationMs: number;
   commitHash: string;
+  status: 'NOT_RUN';
 } {
-  const rules = customRules || CODEQL_RULES;
-  const violations = rules.filter(r => r.status === 'VIOLATION_FOUND');
   return {
-    rulesScanned: rules.length,
-    passed: rules.length - violations.length,
-    failed: violations.length,
-    violations,
-    scanDurationMs: 142 + Math.floor(Math.random() * 40),
-    commitHash: 'e4f8a1290bb34c'
+    rulesScanned: 0,
+    passed: 0,
+    failed: 0,
+    violations: [],
+    scanDurationMs: 0,
+    commitHash: 'NOT_VERIFIED',
+    status: 'NOT_RUN'
   };
 }
