@@ -17,7 +17,6 @@ import { INITIAL_SCORECARD_CATEGORIES } from './data/scorecardData';
 import { CHAPTERS_DATA } from './data/chaptersData';
 import { evaluateFullScorecard } from './utils/testRunner';
 import { ScorecardCategory } from './types';
-import confetti from 'canvas-confetti';
 
 export function App() {
   const [activeTab, setActiveTab] = useState<string>('scorecard');
@@ -29,53 +28,34 @@ export function App() {
   // Compute total earned points dynamically
   const totalScore = categories.reduce((sum, cat) => sum + cat.earnedPoints, 0);
 
-  // Full Reality Audit runner across all 12 categories
+  // The browser has no trusted CI evidence source; clicks cannot certify a repository.
   const handleRunFullAudit = () => {
     setIsAuditing(true);
-    setTimeout(() => {
-      const updated = evaluateFullScorecard(categories);
-      setCategories(updated);
-      setIsAuditing(false);
-      confetti({
-        particleCount: 150,
-        spread: 80,
-        origin: { y: 0.5 }
-      });
-    }, 1200);
+    setCategories(previous => evaluateFullScorecard(previous));
+    setIsAuditing(false);
   };
 
-  // Verify single item in a category
   const handleExecuteItem = (categoryId: string, itemId: string) => {
-    setCategories(prev =>
-      prev.map(cat => {
-        if (cat.id !== categoryId) return cat;
-        let catEarned = 0;
-        const updatedItems = cat.items.map(item => {
-          if (item.id === itemId) {
-            catEarned += item.points;
-            return {
-              ...item,
-              status: 'PASS' as const,
-              earnedPoints: item.points,
-              evidence: `VERIFIED PASS: ${item.acceptanceCriteria} Execution verified at ${new Date().toLocaleTimeString()} on Arbitrum.`,
-              lastRun: new Date().toLocaleTimeString()
-            };
-          }
-          catEarned += item.earnedPoints;
-          return item;
-        });
-
-        return {
-          ...cat,
-          earnedPoints: catEarned,
-          items: updatedItems
-        };
-      })
-    );
+    setCategories(previous => previous.map(category => {
+      if (category.id !== categoryId) return category;
+      return {
+        ...category,
+        earnedPoints: 0,
+        items: category.items.map(item => ({
+          ...item,
+          status: (item.status === 'NOT_APPLICABLE' ? 'NOT_APPLICABLE' : 'NOT_RUN') as const,
+          earnedPoints: 0,
+          evidence: item.id === itemId
+            ? 'NOT_RUN: No command was executed in this browser; validate through GitHub Actions with auditable logs.'
+            : item.evidence
+        }))
+      };
+    }));
   };
 
   const handleConnectWallet = () => {
-    setWalletConnected(true);
+    // Wallet integration is not implemented in this framework UI. Never fabricate a connection.
+    setWalletConnected(false);
   };
 
   const handleDisconnectWallet = () => {
