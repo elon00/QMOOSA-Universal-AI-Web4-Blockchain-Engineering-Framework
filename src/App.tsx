@@ -43,7 +43,7 @@ export function App() {
         earnedPoints: 0,
         items: category.items.map(item => ({
           ...item,
-          status: (item.status === 'NOT_APPLICABLE' ? 'NOT_APPLICABLE' : 'NOT_RUN') as const,
+          status: (item.status === 'NOT_APPLICABLE' ? 'NOT_APPLICABLE' : 'NOT_RUN') as 'NOT_RUN' | 'NOT_APPLICABLE',
           earnedPoints: 0,
           evidence: item.id === itemId
             ? 'NOT_RUN: No command was executed in this browser; validate through GitHub Actions with auditable logs.'
