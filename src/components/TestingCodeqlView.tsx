@@ -15,11 +15,8 @@ export const TestingCodeqlView: React.FC = () => {
 
   const handleRunCodeQl = () => {
     setIsScanningCodeQl(true);
-    setTimeout(() => {
-      const report = runCodeQlScan(codeQlRules);
-      setCodeQlReport(report);
-      setIsScanningCodeQl(false);
-    }, 600);
+    setCodeQlReport(runCodeQlScan(codeQlRules));
+    setIsScanningCodeQl(false);
   };
 
   const handleRunTest = async (testId: string) => {
@@ -62,7 +59,7 @@ export const TestingCodeqlView: React.FC = () => {
               CodeQL Reality Check & Automated Test Suites
             </h2>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Execute authentic CodeQL static application security queries, automated smoke tests, regression tests, sanity checks, and reality gates with unforgeable terminal logs.
+              Browse required CodeQL and test commands. This static UI does not execute them; real CI logs and SARIF artifacts are required before any PASS.
             </p>
           </div>
 
@@ -110,22 +107,14 @@ export const TestingCodeqlView: React.FC = () => {
               className="px-3.5 py-1.5 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isScanningCodeQl ? 'animate-spin' : ''}`} />
-              <span>{isScanningCodeQl ? 'Analyzing Codebase...' : 'Run Full CodeQL Database Scan'}</span>
+              <span>{isScanningCodeQl ? 'Analyzing Codebase...' : 'Check CodeQL Execution Availability'}</span>
             </button>
           </div>
 
           {codeQlReport && (
-            <div className="p-4 rounded-xl bg-emerald-950/30 border border-emerald-800/50 flex items-center justify-between font-mono text-xs text-emerald-300">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                <span>CodeQL Scan Completed Cleanly (Commit {codeQlReport.commitHash})</span>
-              </div>
-              <div className="space-x-4">
-                <span>Rules: {codeQlReport.rulesScanned}</span>
-                <span>Passed: {codeQlReport.passed}</span>
-                <span>Failed: {codeQlReport.failed}</span>
-                <span>Duration: {codeQlReport.scanDurationMs}ms</span>
-              </div>
+            <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-800/50 font-mono text-xs text-amber-300 flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4" />
+              <span>NOT_RUN — This browser does not execute CodeQL. Review real GitHub Actions, SARIF artifacts, and the analyzed commit before marking findings clean. Rules evaluated: {codeQlReport.rulesScanned}.</span>
             </div>
           )}
 
@@ -145,8 +134,8 @@ export const TestingCodeqlView: React.FC = () => {
                 <p className="text-slate-300 text-[11px] leading-relaxed">{rule.description}</p>
                 <div className="flex items-center justify-between text-[10px] font-mono text-slate-500 pt-1 border-t border-slate-800/60">
                   <span>Target: {rule.filePath}:{rule.line}</span>
-                  <span className="text-emerald-400 font-bold flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" /> {rule.status}
+                  <span className="text-amber-400 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> {rule.status}
                   </span>
                 </div>
               </div>
@@ -173,13 +162,13 @@ export const TestingCodeqlView: React.FC = () => {
                       <h4 className="text-sm font-bold text-white flex items-center gap-2">
                         <span>{test.name}</span>
                         {res && (
-                          <span className="text-[10px] px-2 py-0.2 rounded font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800 flex items-center gap-1">
-                            <CheckCircle2 className="w-3 h-3" /> PASS
+                          <span className="text-[10px] px-2 py-0.2 rounded font-mono font-bold bg-amber-950 text-amber-400 border border-amber-800 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3" /> {res.status}
                           </span>
                         )}
                       </h4>
                       <div className="text-[11px] font-mono text-slate-400 mt-0.5">
-                        Suite: {test.suite} Test • Executed via Node/Forge
+                        Suite: {test.suite} Test • Command catalog (not executed in browser)
                       </div>
                     </div>
 
@@ -196,17 +185,17 @@ export const TestingCodeqlView: React.FC = () => {
                   {/* Test Command Box */}
                   <div className="p-2.5 rounded-lg bg-slate-950 border border-slate-800 font-mono text-xs text-cyan-300/90 flex items-center justify-between">
                     <span>$ {test.command}</span>
-                    <span className="text-slate-500 text-[10px]">~{test.durationMs}ms</span>
+                    <span className="text-slate-500 text-[10px]">Not measured</span>
                   </div>
 
                   {/* Terminal Execution Output */}
                   {res && (
                     <div className="p-3.5 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs space-y-1 shadow-inner">
                       <div className="text-[10px] text-slate-500 flex justify-between pb-1 border-b border-slate-900">
-                        <span>Exit Status: 0 OK</span>
+                        <span>CLI execution: {res.status}</span>
                         <span>{res.timestamp}</span>
                       </div>
-                      <pre className="text-emerald-300/90 text-[11px] leading-relaxed whitespace-pre-wrap pt-1">
+                      <pre className="text-amber-300/90 text-[11px] leading-relaxed whitespace-pre-wrap pt-1">
                         {res.output}
                       </pre>
                     </div>
