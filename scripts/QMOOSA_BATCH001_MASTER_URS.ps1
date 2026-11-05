@@ -214,9 +214,15 @@ foreach($repo in $expected) {
       if($codeChecks.Count -gt 0 -and $cqBad.Count -eq 0) {
        $alerts=Run-Command "gh api ""repos/$repo/code-scanning/alerts?state=open&per_page=100""" $dir "$name-code-scanning"
        if($alerts.Code -eq 0) {
-        $open=@(Read-Json $alerts.Out)
-        if($open.Count -eq 0){$codeQLStatus='PASS';$codeQlDetail='Latest CodeQL checks successful and accessible open-alert query returned none; scope not independently audited.'}
-        else {$codeQLStatus='FAIL';$codeQlDetail="Code-scanning open alerts: $($open.Count); review severities and pagination"}
+        $alertsText=(Get-Content -LiteralPath $alerts.Out -Raw).Trim()
+        if($alertsText -eq '[]') {
+         $codeQLStatus='PASS';$codeQlDetail='Latest CodeQL checks successful, and accessible open-alert query returned an empty list. This is not an independent audit.'
+        } elseif($alertsText.StartsWith('[')) {
+         $open=@(Read-Json $alerts.Out | Where-Object {$null -ne $_})
+         if($open.Count -gt 0) {
+          $codeQLStatus='FAIL';$codeQlDetail="Code-scanning open alerts at least $($open.Count); review severity, pagination and dismissals"
+         } else {$codeQLStatus='BLOCKED';$codeQlDetail='Code-scanning JSON parsing ambiguous'}
+        } else {$codeQLStatus='BLOCKED';$codeQlDetail='Unexpected code-scanning response format'}
        } else {$codeQLStatus='BLOCKED';$codeQlDetail='CodeQL checks successful but code scanning alert access unavailable'}
       } elseif($codeChecks.Count -gt 0) {
        $codeQLStatus='FAIL';$codeQlDetail='CodeQL checks not all successful'
@@ -318,8 +324,14 @@ foreach($repo in $expected) {
 }
 $scores | Export-Csv -LiteralPath $scoreCsv -Encoding UTF8 -NoTypeInformation
 $hashes=@(Get-ChildItem -LiteralPath $logs -File | Where-Object {$_.Extension -in @('.log','.json')} | ForEach-Object {
- [pscustomobject]@{File=$_.Name; SHA256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash}
+ [pscustomobject]@{File=("MASTER_URS/LOGS/" + $_.Name); SHA256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash}
 })
+$phase1Logs=Join-Path $Root 'TEST_LOGS'
+if(Test-Path -LiteralPath $phase1Logs) {
+ $hashes+=@(Get-ChildItem -LiteralPath $phase1Logs -File | Where-Object {$_.Extension -eq '.log'} | ForEach-Object {
+  [pscustomobject]@{File=("TEST_LOGS/" + $_.Name); SHA256=(Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash}
+ })
+}
 if($phase1Report -and (Test-Path -LiteralPath $phase1Report)) {
  $hashes+= [pscustomobject]@{File=(Split-Path -Leaf $phase1Report);SHA256=(Get-FileHash -LiteralPath $phase1Report -Algorithm SHA256).Hash}
 }
