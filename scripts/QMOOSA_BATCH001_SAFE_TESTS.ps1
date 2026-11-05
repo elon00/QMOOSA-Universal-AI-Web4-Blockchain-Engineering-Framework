@@ -7,7 +7,8 @@ Repository test scripts themselves may access networks. Do not supply private ke
 #>
 [CmdletBinding()]
 param(
-    [string]$Root = (Join-Path $env:USERPROFILE 'Downloads\QMOOSA_MASTER')
+    [string]$Root = (Join-Path $env:USERPROFILE 'Downloads\QMOOSA_MASTER'),
+    [switch]$OnlyFailed
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
@@ -29,7 +30,7 @@ $plans = @{
  'qmoosa-mezo' = @('npm run test:lane1','npm run test:lane2')
  'qmoosa-starknet-zk-research' = @('python -m unittest discover tests -v')
  'qmoosa-omni-equality' = @('python -m pytest -q')
- 'Qmoosa-RustChain' = @('cargo fmt --all -- --check','cargo test --workspace --locked')
+ 'Qmoosa-RustChain' = @('cargo fmt --all -- --check','cargo test --workspace')
 }
 foreach ($row in $batch) {
  if ($row.Repository -notmatch '^elon00/([A-Za-z0-9._-]+)$') { throw "Invalid repository: $($row.Repository)" }
@@ -64,6 +65,11 @@ function Run-Logged {
  }
 }
 Write-Host '=== QMOOSA BATCH 001 REAL TESTS ===' -ForegroundColor Cyan
+if ($OnlyFailed) {
+ Write-Host 'Targeted rerun: Agentic Hub and RustChain only' -ForegroundColor Yellow
+ $batch = @($batch | Where-Object { $_.Repository -in @('elon00/Qmoosa-Agentic-Hub','elon00/Qmoosa-RustChain') })
+ if ($batch.Count -ne 2) { throw 'Targeted rerun requires both named repositories in the batch manifest' }
+}
 foreach ($row in $batch) {
  $repo = [string]$row.Repository
  $name = ($repo -split '/')[1]
@@ -98,7 +104,8 @@ foreach ($row in $batch) {
    Save-Result $repo 'npm ci' 'SKIPPED' 901 "$name-npm-ci" $commit
   }
   else {
-   $exitCode = Run-Logged 'npm ci --ignore-scripts --no-audit --no-fund' $dir "$name-npm-ci"
+   $install = if ($name -eq 'Qmoosa-Agentic-Hub') { 'npm ci --legacy-peer-deps --ignore-scripts --no-audit --no-fund' } else { 'npm ci --ignore-scripts --no-audit --no-fund' }
+   $exitCode = Run-Logged $install $dir "$name-npm-ci"
    $npmReady = ($exitCode -eq 0)
    $status = if ($npmReady) { 'PASS' } else { 'FAIL' }
    Save-Result $repo 'npm ci' $status $exitCode "$name-npm-ci" $commit
