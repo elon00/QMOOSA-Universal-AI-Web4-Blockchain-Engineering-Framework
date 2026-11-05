@@ -236,7 +236,7 @@ foreach($repo in $expected) {
  Add-Gate $repo 'LocalSelectedTests' 25 $localStatus "Fresh run checks=$($rows.Count); source SHA=$local; runnerExit=$phase1Exit; CSV=$phase1Report" $local
  Add-Gate $repo 'GitHubLatestCI' 15 $ciStatus $ciDetail $remote
  Add-Gate $repo 'CodeQLAndAlerts' 10 $codeQLStatus $codeQlDetail $remote
- Write-Host "$name: Local=$localStatus; GitHubCI=$ciStatus; CodeQL=$codeQLStatus"
+ Write-Host "${name}: Local=$localStatus; GitHubCI=$ciStatus; CodeQL=$codeQLStatus"
 }
 
 # Phase 3: dependency security (read-only package advisories; no npm audit fix).
