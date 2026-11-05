@@ -1,6 +1,6 @@
 #Requires -Version 5.1
 <#
-QMOOSA BATCH 001 — UNIVERSAL REALITY SYSTEM (URS)
+QMOOSA BATCH 001 - UNIVERSAL REALITY SYSTEM (URS)
 One run: inventory -> preflight -> selected local checks -> CI -> dependency security
 -> source-bound testnet evidence -> fail-closed scores and evidence dossier.
 No private keys, wallet signing, mainnet activity, remote writes or PR merging.
@@ -325,7 +325,7 @@ if($phase1Report -and (Test-Path -LiteralPath $phase1Report)) {
 }
 $hashes | Export-Csv -LiteralPath $manifestFile -Encoding UTF8 -NoTypeInformation
 $md=@(
- '# QMOOSA Batch 001 — End-to-End Reality Gate',
+ '# QMOOSA Batch 001 - End-to-End Reality Gate',
  '',
  "Timestamp (UTC): $((Get-Date).ToUniversalTime().ToString('o'))",
  "Selected local test report: $phase1Report",
@@ -337,7 +337,7 @@ $md=@(
 )
 foreach($score in $scores){$md+="| $($score.Repository) | $($score.Earned)/100 | $($score.MissingGates) | NOT CERTIFIED |"}
 $md+=@('','## Limitations','- No automatic mainnet certification or spending.','- Unsupported native receipt adapters stay BLOCKED/PENDING.','- GitHub check context success is narrower than a full external audit.','- Testnet transaction confirmation is not x402 settlement verification.','- Manifests must be bound to exact repository SHA; never paste private keys.','','## Next blockers')
-foreach($gate in @($gates | Where-Object {$_.Status -ne 'PASS'})){$md+="- $($gate.Repository): $($gate.Gate) — $($gate.Status). $($gate.Evidence)"}
+foreach($gate in @($gates | Where-Object {$_.Status -ne 'PASS'})){$md+="- $($gate.Repository): $($gate.Gate) - $($gate.Status). $($gate.Evidence)"}
 if($notes.Count -gt 0){$md+='';$md+='## Runner notes';foreach($n in $notes){$md+="- $n"}}
 $md | Set-Content -LiteralPath $summaryFile -Encoding UTF8
 
