@@ -1,0 +1,43 @@
+name: Batch 001 Windows PowerShell Validation
+
+on:
+  push:
+    branches:
+      - fix/windows-batch001-one-click-20261105
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  powershell-5-syntax:
+    runs-on: windows-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse script with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          $script = Join-Path $env:GITHUB_WORKSPACE 'scripts\QMOOSA_BATCH001_SAFE_TESTS.ps1'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile($script, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -ne 0) {
+            $errors | ForEach-Object { Write-Error $_.Message }
+            exit 1
+          }
+          Write-Host 'PowerShell 5.1 syntax: PASS'
+      - name: Missing manifest must fail closed without cloning
+        shell: powershell
+        run: |
+          $script = Join-Path $env:GITHUB_WORKSPACE 'scripts\QMOOSA_BATCH001_SAFE_TESTS.ps1'
+          $empty = Join-Path $env:RUNNER_TEMP 'qmoosa-missing-manifest'
+          New-Item -ItemType Directory -Force -Path $empty | Out-Null
+          $stdout = Join-Path $env:RUNNER_TEMP 'missing-manifest.stdout.log'
+          $stderr = Join-Path $env:RUNNER_TEMP 'missing-manifest.stderr.log'
+          $p = Start-Process -FilePath 'powershell.exe' -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"{0}"' -f $script),'-Root',('"{0}"' -f $empty)) -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr -NoNewWindow
+          if ($p.ExitCode -eq 0) { throw 'FAIL: missing manifest was incorrectly accepted' }
+          $errorText = Get-Content $stderr -Raw
+          if ($errorText -notmatch 'Cannot find.*BATCH_001.csv') { throw 'Wrong failure: expected missing manifest rejection' }
+          Write-Host 'Missing manifest: BLOCKED as expected'

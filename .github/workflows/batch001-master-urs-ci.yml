@@ -1,0 +1,54 @@
+name: Batch 001 End-to-End URS Windows Validation
+
+on:
+  push:
+    branches:
+      - fix/windows-batch001-one-click-20261105
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  master-urs-preflight:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Windows PowerShell 5.1 syntax
+        shell: powershell
+        run: |
+          $file = Join-Path $env:GITHUB_WORKSPACE 'scripts\QMOOSA_BATCH001_MASTER_URS.ps1'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile($file, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -ne 0) {
+            $errors | ForEach-Object { Write-Host $_.Message }
+            exit 1
+          }
+          Write-Host 'Syntax: PASS'
+      - name: Run zero-network manifest/evidence-template smoke test
+        shell: powershell
+        run: |
+          $file = Join-Path $env:GITHUB_WORKSPACE 'scripts\QMOOSA_BATCH001_MASTER_URS.ps1'
+          $root = Join-Path $env:RUNNER_TEMP 'valid-urs'
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $file -Root $root -PreflightOnly
+          if ($LASTEXITCODE -ne 0) { throw 'URS preflight unexpectedly failed' }
+          $records = @(Import-Csv (Join-Path $root 'BATCH_001.csv'))
+          $templates = @(Get-ChildItem (Join-Path $root 'CHAIN_EVIDENCE') -Filter '*.json')
+          if ($records.Count -ne 10 -or $templates.Count -ne 10) { throw 'Invalid inventory or evidence template count' }
+          Write-Host 'Preflight: 10 repositories and 10 templates PASS'
+      - name: Reject unexpected repositories without network calls
+        shell: powershell
+        run: |
+          $file = Join-Path $env:GITHUB_WORKSPACE 'scripts\QMOOSA_BATCH001_MASTER_URS.ps1'
+          $root = Join-Path $env:RUNNER_TEMP 'invalid-urs'
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          @([pscustomobject]@{Repository='elon00/UNAUTHORIZED-REPO'}) | Export-Csv (Join-Path $root 'BATCH_001.csv') -NoTypeInformation
+          $out = Join-Path $env:RUNNER_TEMP 'rejection.out.log'
+          $err = Join-Path $env:RUNNER_TEMP 'rejection.err.log'
+          $arguments = @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"{0}"' -f $file),'-Root',('"{0}"' -f $root),'-PreflightOnly')
+          $p = Start-Process -FilePath 'powershell.exe' -ArgumentList $arguments -PassThru -Wait -NoNewWindow -RedirectStandardOutput $out -RedirectStandardError $err
+          if ($p.ExitCode -eq 0) { throw 'Unexpected repo was incorrectly accepted' }
+          Write-Host 'Unsafe inventory: rejected as expected'
