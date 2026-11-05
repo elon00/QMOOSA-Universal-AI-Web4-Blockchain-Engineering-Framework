@@ -1,0 +1,44 @@
+name: Mezo X402 Safe Trial Windows Validation
+
+on:
+  push:
+    branches: [security/mezo-safe-x402-trial-20261105]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows-parser-and-preflight:
+    runs-on: windows-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse PowerShell 5.1 script
+        shell: powershell
+        run: |
+          $script = Join-Path $env:GITHUB_WORKSPACE 'scripts\QMOOSA_MEZO_X402_SAFE_TRIAL.ps1'
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile($script,[ref]$tokens,[ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) {
+            $errors | ForEach-Object { Write-Host $_.ToString() }
+            throw 'Parser rejected the trial script'
+          }
+          Write-Host 'PowerShell 5.1 syntax PASS'
+      - name: Confirm preflight needs no network and changes no files
+        shell: powershell
+        run: |
+          $script = Join-Path $env:GITHUB_WORKSPACE 'scripts\QMOOSA_MEZO_X402_SAFE_TRIAL.ps1'
+          $root = Join-Path $env:RUNNER_TEMP 'mezo-safe-preflight'
+          $source = Join-Path $root 'SECURITY_REPAIR\qmoosa-mezo'
+          New-Item -ItemType Directory -Force -Path (Join-Path $source '.git') | Out-Null
+          '{"name":"qmoosa-mezo"}' | Set-Content (Join-Path $source 'package.json')
+          '{"name":"qmoosa-mezo","lockfileVersion":3}' | Set-Content (Join-Path $source 'package-lock.json')
+          $before = @((Get-ChildItem $root -Recurse -File).FullName)
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script -Root $root -PreflightOnly
+          if ($LASTEXITCODE -ne 0) { throw 'Preflight was incorrectly rejected' }
+          $after = @((Get-ChildItem $root -Recurse -File).FullName)
+          if (@(Compare-Object $before $after).Count -ne 0) { throw 'Preflight changed files' }
+          Write-Host 'Preflight: PASS'
