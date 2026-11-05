@@ -34,6 +34,10 @@ jobs:
           $script = Join-Path $env:GITHUB_WORKSPACE 'scripts\QMOOSA_BATCH001_SAFE_TESTS.ps1'
           $empty = Join-Path $env:RUNNER_TEMP 'qmoosa-missing-manifest'
           New-Item -ItemType Directory -Force -Path $empty | Out-Null
-          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $script -Root $empty 2>&1 | Out-String | Write-Host
-          if ($LASTEXITCODE -eq 0) { throw 'FAIL: missing manifest was incorrectly accepted' }
+          $stdout = Join-Path $env:RUNNER_TEMP 'missing-manifest.stdout.log'
+          $stderr = Join-Path $env:RUNNER_TEMP 'missing-manifest.stderr.log'
+          $p = Start-Process -FilePath 'powershell.exe' -ArgumentList @('-NoProfile','-ExecutionPolicy','Bypass','-File',('"{0}"' -f $script),'-Root',('"{0}"' -f $empty)) -Wait -PassThru -RedirectStandardOutput $stdout -RedirectStandardError $stderr -NoNewWindow
+          if ($p.ExitCode -eq 0) { throw 'FAIL: missing manifest was incorrectly accepted' }
+          $errorText = Get-Content $stderr -Raw
+          if ($errorText -notmatch 'Cannot find.*BATCH_001.csv') { throw 'Wrong failure: expected missing manifest rejection' }
           Write-Host 'Missing manifest: BLOCKED as expected'
