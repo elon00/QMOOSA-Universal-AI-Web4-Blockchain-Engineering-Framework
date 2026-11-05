@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X402Resource, X402PaymentProof } from '../types';
+import { X402Resource } from '../types';
 import { Activity, ShieldCheck, ExternalLink, ArrowRight, CheckCircle2, AlertCircle, ShoppingBag, Coins } from 'lucide-react';
 
 const INITIAL_RESOURCES: X402Resource[] = [
@@ -35,49 +35,31 @@ const INITIAL_RESOURCES: X402Resource[] = [
 export const X402BazaarView: React.FC = () => {
   const [resources] = useState<X402Resource[]>(INITIAL_RESOURCES);
   const [selectedResource, setSelectedResource] = useState<X402Resource>(INITIAL_RESOURCES[0]);
-  const [paymentStatus, setPaymentStatus] = useState<'IDLE' | 'CHALLENGE_402' | 'PROOF_GENERATED' | 'SETTLED'>('IDLE');
-  const [generatedProof, setGeneratedProof] = useState<X402PaymentProof | null>(null);
+  const [paymentStatus, setPaymentStatus] = useState<'IDLE' | 'EXAMPLE_402' | 'BLOCKED'>('IDLE');
   const [logs, setLogs] = useState<string[]>([
-    '[X402_INIT] x402 Foundation Bazaar Discovery Engine v2.0 ready.',
-    '[REGISTRY] 3 microservices indexed on Arbitrum network.',
-    '[CLIENT] Ready to query paid autonomous resources.'
+    '[DEMO] Sample x402 resource catalog only — no network service discovery performed.',
+    '[BLOCKED] No live facilitator, wallet authorization, or durable settlement verifier configured.'
   ]);
 
   const requestResource = (resource: X402Resource) => {
     setSelectedResource(resource);
-    setPaymentStatus('CHALLENGE_402');
-    setLogs(prev => [
-      `[HTTP_REQ] GET ${resource.path}`,
-      `[HTTP_RES] 402 Payment Required`,
-      `[HEADERS] X-402-Payment-Required: true`,
-      `[HEADERS] X-402-Amount: ${resource.costTokens} QMOOSA`,
-      `[HEADERS] X-402-Recipient: ${resource.provider}`,
-      `[HEADERS] X-402-Chain: Arbitrum-One (42161)`,
-      ...prev.slice(0, 6)
+    setPaymentStatus('EXAMPLE_402');
+    setLogs(previous => [
+      `[EXAMPLE_ONLY] GET ${resource.path} — no HTTP request was sent.`,
+      '[EXAMPLE_ONLY] A compatible server might respond HTTP 402 with a payment challenge.',
+      `[EXAMPLE_ONLY] Suggested token price: ${resource.costTokens} QMOOSA; no funds requested.`,
+      ...previous.slice(0, 6)
     ]);
   };
 
   const payAndSettle = () => {
-    const proof: X402PaymentProof = {
-      proofId: 'proof_' + Math.random().toString(36).substring(2, 10),
-      resourceId: selectedResource.id,
-      payerAddress: '0x71C...a891',
-      amount: selectedResource.costTokens,
-      tokenSymbol: 'QMOOSA',
-      timestamp: Date.now(),
-      txHash: '0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join(''),
-      verified: true,
-      signature: '0x' + Array.from(crypto.getRandomValues(new Uint8Array(65))).map(b => b.toString(16).padStart(2, '0')).join('')
-    };
-
-    setGeneratedProof(proof);
-    setPaymentStatus('SETTLED');
-    setLogs(prev => [
-      `[WALLET_SIGN] User approved ${selectedResource.costTokens} QMOOSA transfer.`,
-      `[PROOF_GENERATED] Proof ID: ${proof.proofId}`,
-      `[TX_SETTLED] Arbitrum Tx: ${proof.txHash.slice(0, 18)}...`,
-      `[HTTP_RES] 200 OK — Access Granted to ${selectedResource.name}`,
-      ...prev.slice(0, 6)
+    // Fail closed: this browser demo cannot sign a wallet transaction,
+    // verify a facilitator response, or assert on-chain finality.
+    setPaymentStatus('BLOCKED');
+    setLogs(previous => [
+      '[BLOCKED] No payment was signed, sent, verified, or settled.',
+      '[REQUIRED] Implement native chain signing, facilitator verification, finality, and durable replay protection.',
+      ...previous.slice(0, 6)
     ]);
   };
 
@@ -99,7 +81,7 @@ export const X402BazaarView: React.FC = () => {
               x402 Bazaar Protocol & Agent Microservices
             </h2>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Standardized HTTP 402 Payment Required negotiation allowing autonomous AI agents to discover, negotiate, and settle payments for computing APIs with Arbitrum tokens.
+              Illustrative x402 resource catalog. No real service discovery, wallet signing, facilitator verification, or settlement is connected to this UI.
             </p>
           </div>
 
@@ -136,7 +118,7 @@ export const X402BazaarView: React.FC = () => {
                 <ShoppingBag className="w-4 h-4 text-cyan-400" />
                 <span>Bazaar Service Catalog</span>
               </h3>
-              <span className="text-xs font-mono text-cyan-400">Indexed on Arbitrum</span>
+              <span className="text-xs font-mono text-cyan-400">Example catalog — not indexed</span>
             </div>
 
             <div className="space-y-2.5">
@@ -169,19 +151,19 @@ export const X402BazaarView: React.FC = () => {
           </div>
         </div>
 
-        {/* Live HTTP 402 Negotiation & Settlement Panel */}
+        {/* Example HTTP 402 Negotiation Panel */}
         <div className="lg:col-span-7 space-y-4">
           <div className="p-5 rounded-xl bg-slate-900/70 border border-slate-800 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <Activity className="w-4 h-4 text-cyan-400" />
-                <span>HTTP 402 Interactive Negotiation Flow</span>
+                <span>HTTP 402 Protocol Walkthrough (No Network Calls)</span>
               </h3>
               <span
                 className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
-                  paymentStatus === 'SETTLED'
-                    ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                    : paymentStatus === 'CHALLENGE_402'
+                  paymentStatus === 'BLOCKED'
+                    ? 'bg-rose-950 text-rose-400 border border-rose-800'
+                    : paymentStatus === 'EXAMPLE_402'
                     ? 'bg-amber-950 text-amber-400 border border-amber-800'
                     : 'bg-slate-800 text-slate-400'
                 }`}
@@ -208,33 +190,31 @@ export const X402BazaarView: React.FC = () => {
               </div>
 
               {/* Action Button */}
-              {paymentStatus === 'CHALLENGE_402' && (
+              {paymentStatus === 'EXAMPLE_402' && (
                 <div className="p-3.5 rounded-lg bg-amber-950/40 border border-amber-800/60 space-y-3">
                   <div className="flex items-center gap-2 text-amber-300 font-semibold text-xs">
                     <AlertCircle className="w-4 h-4" />
-                    <span>HTTP 402 Challenge Received: Payment Required to Access Resource</span>
+                    <span>Example only: A real HTTP 402 challenge has NOT been received</span>
                   </div>
                   <button
                     onClick={payAndSettle}
                     className="w-full py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:opacity-90 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow-md"
                   >
                     <Coins className="w-3.5 h-3.5" />
-                    <span>Sign Arbitrum Settlement ({selectedResource.costTokens} QMOOSA)</span>
+                    <span>Check Settlement Readiness ({selectedResource.costTokens} QMOOSA)</span>
                   </button>
                 </div>
               )}
 
-              {paymentStatus === 'SETTLED' && generatedProof && (
-                <div className="p-3.5 rounded-lg bg-emerald-950/40 border border-emerald-800/60 space-y-2">
-                  <div className="flex items-center gap-2 text-emerald-300 font-semibold text-xs">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    <span>Payment Settled & Cryptographic Proof Verified</span>
+              {paymentStatus === 'BLOCKED' && (
+                <div className="p-3.5 rounded-lg bg-rose-950/40 border border-rose-800/60 space-y-2">
+                  <div className="flex items-center gap-2 text-rose-300 font-semibold text-xs">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>Settlement unavailable — NOT VERIFIED</span>
                   </div>
-                  <div className="font-mono text-[10px] text-slate-300 space-y-1">
-                    <div>Tx Hash: <span className="text-emerald-400">{generatedProof.txHash}</span></div>
-                    <div>Proof ID: <span className="text-cyan-300">{generatedProof.proofId}</span></div>
-                    <div>Settlement: <span className="text-slate-200">Arbitrum Nitro Sequencer Verified</span></div>
-                  </div>
+                  <p className="text-[11px] text-slate-300">
+                    This framework is a UI demonstration. No wallet signature, transaction hash, payment proof, or settlement receipt has been produced.
+                  </p>
                 </div>
               )}
             </div>

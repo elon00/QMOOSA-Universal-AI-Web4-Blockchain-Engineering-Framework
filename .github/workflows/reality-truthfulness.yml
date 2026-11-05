@@ -1,0 +1,36 @@
+name: Reality Truthfulness Regression
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  no-fabricated-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Fail closed on fabricated attestations
+        run: node --test tests/truthfulness.test.mjs
+
+  build-and-typecheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: '1.4.3'
+      - name: Install locked dependencies
+        run: bun install --frozen-lockfile
+      - name: TypeScript typecheck
+        run: bun run lint
+      - name: Production UI build
+        run: bun run build

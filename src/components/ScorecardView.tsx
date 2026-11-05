@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { ScorecardCategory, ScorecardItem } from '../types';
 import { CheckCircle2, AlertTriangle, Play, Download, Terminal, ChevronDown, ChevronRight, ShieldCheck, Flame, RefreshCw, Sparkles } from 'lucide-react';
-import confetti from 'canvas-confetti';
 
 interface ScorecardViewProps {
   categories: ScorecardCategory[];
@@ -30,19 +29,9 @@ export const ScorecardView: React.FC<ScorecardViewProps> = ({
     setExpandedCats(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const triggerConfetti = () => {
-    confetti({
-      particleCount: 120,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-  };
-
   const handleAuditClick = () => {
+    // No on-device CI execution is available; parent resets any unverified claims.
     onRunAudit();
-    setTimeout(() => {
-      triggerConfetti();
-    }, 1200);
   };
 
   const exportReport = (format: 'json' | 'md') => {
@@ -55,8 +44,8 @@ export const ScorecardView: React.FC<ScorecardViewProps> = ({
         framework: 'QMOOSA Universal AI–Web4–Blockchain Framework',
         targetRepository: 'github.com/elon00/qmoosa-web4-arbitrum',
         edition: '2026 Arbitrum Production Edition',
-        verifiedScore: `${totalScore} / 100`,
-        status: totalScore === 100 ? 'MISSION COMPLETED SUCCESSFULLY — VERIFIED 100/100' : 'MISSION PARTIALLY COMPLETED',
+        displayedScore: `${totalScore} / 100`,
+        status: 'NOT_CERTIFIED — no signed CI evidence or independently validated on-chain receipts loaded',
         generatedAt: new Date().toISOString(),
         categories
       };
@@ -69,7 +58,7 @@ export const ScorecardView: React.FC<ScorecardViewProps> = ({
 **Network:** Arbitrum One (Chain ID 42161) / Sepolia (Chain ID 421614)
 **Date:** ${new Date().toISOString()}
 **Earned Score:** ${totalScore} / 100
-**Verdict:** ${totalScore === 100 ? 'MISSION COMPLETED SUCCESSFULLY — VERIFIED 100/100' : 'MISSION PARTIALLY COMPLETED — IN PROGRESS'}
+**Verdict:** NOT_CERTIFIED — evidence not validated by this browser UI
 
 ---
 
@@ -113,21 +102,21 @@ ${c.items.map(i => `- [${i.status === 'PASS' ? 'x' : ' '}] **${i.name}** (${i.ea
               Evidence-Based Production Scorecard
             </h2>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Earn an unforgeable 100/100 score backed by real execution of CodeQL scans, smoke tests, regression suites, QuickNode RPC pings, PQC vectors, Conway hashes, and Arbitrum smart contract deployments.
+              Scorecard entries remain unverified until genuine CI runs, security reports, and on-chain receipts have been checked independently. Browser clicks do not award points.
             </p>
           </div>
 
           {/* Interactive Score Display */}
           <div className="flex flex-col sm:flex-row items-center gap-4 bg-slate-950/80 p-4 rounded-xl border border-slate-800 shadow-inner">
             <div className="text-center sm:text-right">
-              <div className="text-xs uppercase tracking-wider text-slate-400 font-mono">Verified Score</div>
+              <div className="text-xs uppercase tracking-wider text-slate-400 font-mono">Unverified UI Score</div>
               <div className="text-4xl font-extrabold font-mono tracking-tight text-white flex items-center justify-center sm:justify-end gap-1">
                 <span className={totalScore === 100 ? 'text-emerald-400' : 'text-cyan-400'}>{totalScore}</span>
                 <span className="text-slate-600 text-2xl">/</span>
                 <span className="text-slate-400 text-2xl">100</span>
               </div>
               <div className="text-[11px] text-slate-400 mt-0.5">
-                {totalScore === 100 ? 'All 12 Gates Certified' : `${100 - totalScore} Points Pending`}
+                {`${100 - totalScore} Points Without Verified Evidence`}
               </div>
             </div>
 
@@ -145,7 +134,7 @@ ${c.items.map(i => `- [${i.status === 'PASS' ? 'x' : ' '}] **${i.name}** (${i.ea
                 ) : (
                   <>
                     <Sparkles className="w-4 h-4 text-cyan-200" />
-                    <span>Run Full Reality Audit (Earn 100/100)</span>
+                    <span>Review Missing Evidence (No Auto-Certification)</span>
                   </>
                 )}
               </button>
@@ -192,7 +181,7 @@ ${c.items.map(i => `- [${i.status === 'PASS' ? 'x' : ' '}] **${i.name}** (${i.ea
             <ShieldCheck className="w-4 h-4 text-cyan-400" />
             <span>The 12 Core Architectural Verification Gates</span>
           </h3>
-          <span className="text-xs text-slate-400 font-mono">12 Categories • 24 Verified Criteria</span>
+          <span className="text-xs text-slate-400 font-mono">12 Categories • 24 Evidence Criteria</span>
         </div>
 
         <div className="grid grid-cols-1 gap-4">

@@ -12,9 +12,7 @@ export const TokenomicsLaunchpadView: React.FC = () => {
   const [tokenName, setTokenName] = useState<string>('QMOOSA Universal');
   const [tokenSymbol, setTokenSymbol] = useState<string>('QMOOSA');
   const [targetChain, setTargetChain] = useState<'Arbitrum One' | 'Arbitrum Sepolia'>('Arbitrum Sepolia');
-  const [deployStatus, setDeployStatus] = useState<'IDLE' | 'SIMULATING' | 'DEPLOYED'>('IDLE');
-  const [deployedContractAddress, setDeployedContractAddress] = useState<string>('');
-  const [deployTxHash, setDeployTxHash] = useState<string>('');
+  const [deployStatus, setDeployStatus] = useState<'IDLE' | 'BLOCKED'>('IDLE');
 
   // Governed issuance calculation: M(t) = min(R(t), annual_emission_limit(t))
   const maxAllowedAnnualMint = Math.floor((initialSupply * annualLimitBps) / 10000);
@@ -22,14 +20,8 @@ export const TokenomicsLaunchpadView: React.FC = () => {
   const isCapped = issuanceRequest > maxAllowedAnnualMint;
 
   const handleSimulateDeploy = () => {
-    setDeployStatus('SIMULATING');
-    setTimeout(() => {
-      const mockAddr = '0x' + Array.from(crypto.getRandomValues(new Uint8Array(20))).map(b => b.toString(16).padStart(2, '0')).join('');
-      const mockTx = '0x' + Array.from(crypto.getRandomValues(new Uint8Array(32))).map(b => b.toString(16).padStart(2, '0')).join('');
-      setDeployedContractAddress(mockAddr);
-      setDeployTxHash(mockTx);
-      setDeployStatus('DEPLOYED');
-    }, 800);
+    // Fail closed: the browser does not contain a native deployer or receipt verifier.
+    setDeployStatus('BLOCKED');
   };
 
   return (
@@ -43,14 +35,14 @@ export const TokenomicsLaunchpadView: React.FC = () => {
                 <Layers className="w-3.5 h-3.5" /> Governed Unlimited-Mint Standard
               </span>
               <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950 text-emerald-400 border border-emerald-800">
-                Arbitrum ERC-20 Launchpad
+                Arbitrum ERC-20 Launchpad Design
               </span>
             </div>
             <h2 className="text-2xl font-black text-white tracking-tight">
               Tokenomics Strategy & Arbitrum Token Launchpad
             </h2>
             <p className="text-sm text-slate-300 mt-1 max-w-2xl leading-relaxed">
-              Sustainable uncapped token issuance governed by the formula M(t) = min(R(t), annual_limit(t)), treasury locks, emergency circuit breakers, and one-click Arbitrum deployment simulation.
+              Illustrative emission-rate calculation, not an executed smart contract. Deployment is disabled until native chain signing, bytecode checks and real receipts are integrated.
             </p>
           </div>
 
@@ -127,13 +119,13 @@ export const TokenomicsLaunchpadView: React.FC = () => {
                 <span className="text-slate-200 font-bold">{issuanceRequest.toLocaleString()} tokens</span>
               </div>
               <div className="flex justify-between pt-2 border-t border-slate-800/80 text-sm">
-                <span className="text-cyan-400 font-bold">Approved Mint M(t):</span>
+                <span className="text-cyan-400 font-bold">Model Allowance M(t):</span>
                 <span className="text-emerald-400 font-extrabold">{actualMinted.toLocaleString()} tokens</span>
               </div>
               {isCapped && (
                 <div className="text-[11px] text-amber-400 flex items-center gap-1.5 pt-1">
                   <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
-                  <span>Issuance request exceeded annual limit; rate-capped by smart contract rule.</span>
+                  <span>The calculator caps this value mathematically; on-chain enforcement has not been verified.</span>
                 </div>
               )}
             </div>
@@ -142,7 +134,7 @@ export const TokenomicsLaunchpadView: React.FC = () => {
             <div className="pt-2 flex items-center justify-between p-3 rounded-xl bg-slate-950 border border-slate-800">
               <div>
                 <div className="font-bold text-slate-200 text-xs">Emergency Mint Circuit Breaker</div>
-                <div className="text-[10px] text-slate-500">Freezes all token creation immediately if compromised</div>
+                <div className="text-[10px] text-slate-500">UI-only example; does not freeze a deployed contract</div>
               </div>
               <button
                 onClick={() => setCircuitBreakerTripped(!circuitBreakerTripped)}
@@ -166,7 +158,7 @@ export const TokenomicsLaunchpadView: React.FC = () => {
               <span>Arbitrum ERC-20 Token Launchpad</span>
             </h3>
             <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-950 text-emerald-300 font-mono">
-              Arbitrum Nitro Deployer
+              No deployer connected
             </span>
           </div>
 
@@ -221,39 +213,16 @@ export const TokenomicsLaunchpadView: React.FC = () => {
 
             <button
               onClick={handleSimulateDeploy}
-              disabled={deployStatus === 'SIMULATING'}
-              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-600 hover:opacity-90 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:opacity-50"
+              className="w-full py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer"
             >
-              <Rocket className="w-3.5 h-3.5" />
-              <span>{deployStatus === 'SIMULATING' ? 'Simulating Arbitrum Nitro Deployment...' : `Deploy ${tokenSymbol} to ${targetChain}`}</span>
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>Check Deployment Readiness for {tokenSymbol} ({targetChain})</span>
             </button>
 
-            {deployStatus === 'DEPLOYED' && (
-              <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2 font-mono text-[11px]">
-                <div className="text-emerald-400 font-bold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                  <span>Deployment Successful on {targetChain}</span>
-                </div>
-                <div className="text-slate-400">
-                  Contract Address:
-                  <div className="text-cyan-300 truncate">{deployedContractAddress}</div>
-                </div>
-                <div className="text-slate-400">
-                  Transaction Hash:
-                  <div className="text-slate-200 truncate">{deployTxHash}</div>
-                </div>
-                <div className="pt-1 flex justify-between items-center text-[10px]">
-                  <span className="text-slate-500">Gas Used: 142,500 units (~$0.012)</span>
-                  <a
-                    href={`https://${targetChain === 'Arbitrum Sepolia' ? 'sepolia.' : ''}arbiscan.io/address/${deployedContractAddress}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-cyan-400 hover:underline flex items-center gap-1"
-                  >
-                    <span>View on Arbiscan</span>
-                    <ExternalLink className="w-3 h-3" />
-                  </a>
-                </div>
+            {deployStatus === 'BLOCKED' && (
+              <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-800/60 space-y-2 font-mono text-[11px] text-amber-300">
+                <div className="font-bold">NOT DEPLOYED — missing verifiable chain integration</div>
+                <p>This UI cannot sign transactions, deploy contracts, validate gas, or confirm explorer receipts. No transaction was broadcast and no contract address was generated.</p>
               </div>
             )}
           </div>

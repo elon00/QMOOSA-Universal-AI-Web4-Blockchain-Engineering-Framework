@@ -86,7 +86,7 @@ export interface CodeQlRule {
   severity: 'CRITICAL' | 'HIGH' | 'MEDIUM' | 'LOW';
   cwe: string;
   description: string;
-  status: 'CLEAN' | 'VIOLATION_FOUND' | 'IGNORED';
+  status: 'NOT_RUN' | 'CLEAN' | 'VIOLATION_FOUND' | 'IGNORED';
   filePath: string;
   line: number;
 }
