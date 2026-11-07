@@ -1,0 +1,146 @@
+{
+  "engine": "REA_Reverse_Engineer_Anything",
+  "status": "STRUCTURE_RECONSTRUCTED",
+  "analyzed_files": 46,
+  "manifest": {
+    "bun.lock": {
+      "bytes": 80685
+    },
+    "index.html": {
+      "bytes": 1531
+    },
+    "metadata.json": {
+      "bytes": 466
+    },
+    "package.json": {
+      "bytes": 1117
+    },
+    "tsconfig.json": {
+      "bytes": 565
+    },
+    "vite.config.ts": {
+      "bytes": 727
+    },
+    "docs\\MASTER_100_BLOCKCHAIN_ARCHITECTURE.md": {
+      "bytes": 11264
+    },
+    "docs\\PORTFOLIO_3423_INTEGRATION_ROLLOUT.md": {
+      "bytes": 10976
+    },
+    "docs\\QMOOSA_BATCH001_END_TO_END_BLUEPRINT.md": {
+      "bytes": 8003
+    },
+    "docs\\TRUTHFULNESS_REMEDIATION.md": {
+      "bytes": 2769
+    },
+    "scripts\\QMOOSA_BATCH001_MASTER_URS.ps1": {
+      "bytes": 21380
+    },
+    "scripts\\QMOOSA_BATCH001_SAFE_TESTS.ps1": {
+      "bytes": 6558
+    },
+    "scripts\\QMOOSA_READ_ONLY_PORTFOLIO_INVENTORY.ps1": {
+      "bytes": 3181
+    },
+    "scripts\\rea_inspector.py": {
+      "bytes": 1485
+    },
+    "scripts\\rsi_engine.py": {
+      "bytes": 2039
+    },
+    "src\\App.tsx": {
+      "bytes": 6085
+    },
+    "src\\index.css": {
+      "bytes": 24
+    },
+    "src\\main.tsx": {
+      "bytes": 164
+    },
+    "tests\\reality_check_harness.py": {
+      "bytes": 1250
+    },
+    "tests\\truthfulness.test.mjs": {
+      "bytes": 2384
+    },
+    ".github\\workflows\\batch001-master-urs-ci.yml": {
+      "bytes": 2731
+    },
+    ".github\\workflows\\batch001-windows-validate.yml": {
+      "bytes": 1985
+    },
+    ".github\\workflows\\qmoosa-rsi-rea-sync.yml": {
+      "bytes": 531
+    },
+    ".github\\workflows\\reality-truthfulness.yml": {
+      "bytes": 875
+    },
+    "src\\components\\AiAgenticsView.tsx": {
+      "bytes": 16904
+    },
+    "src\\components\\AlphaFoldTensorView.tsx": {
+      "bytes": 12515
+    },
+    "src\\components\\ArbitrumQuickNodeView.tsx": {
+      "bytes": 11837
+    },
+    "src\\components\\BookReaderView.tsx": {
+      "bytes": 9226
+    },
+    "src\\components\\ConwayEngineView.tsx": {
+      "bytes": 13488
+    },
+    "src\\components\\Header.tsx": {
+      "bytes": 7061
+    },
+    "src\\components\\LinksDirectoryView.tsx": {
+      "bytes": 6608
+    },
+    "src\\components\\PqcStudioView.tsx": {
+      "bytes": 12017
+    },
+    "src\\components\\RavenReaView.tsx": {
+      "bytes": 11763
+    },
+    "src\\components\\ScorecardView.tsx": {
+      "bytes": 15027
+    },
+    "src\\components\\TestingCodeqlView.tsx": {
+      "bytes": 10612
+    },
+    "src\\components\\TokenomicsLaunchpadView.tsx": {
+      "bytes": 12215
+    },
+    "src\\components\\WalletQrView.tsx": {
+      "bytes": 11554
+    },
+    "src\\components\\X402BazaarView.tsx": {
+      "bytes": 11776
+    },
+    "src\\data\\chaptersData.ts": {
+      "bytes": 34742
+    },
+    "src\\data\\linksData.ts": {
+      "bytes": 7078
+    },
+    "src\\data\\scorecardData.ts": {
+      "bytes": 15907
+    },
+    "src\\types\\index.ts": {
+      "bytes": 3568
+    },
+    "src\\utils\\codeqlEngine.ts": {
+      "bytes": 3078
+    },
+    "src\\utils\\conwayEngine.ts": {
+      "bytes": 3968
+    },
+    "src\\utils\\cryptoUtils.ts": {
+      "bytes": 4408
+    },
+    "src\\utils\\testRunner.ts": {
+      "bytes": 3474
+    }
+  },
+  "timestamp": 1794026741
+}
